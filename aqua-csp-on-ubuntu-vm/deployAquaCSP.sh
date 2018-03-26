@@ -1,5 +1,4 @@
-
-bals
+#!/bin/bash
 echo "step start: globals"
 ADMIN_USER=$1
 DOCKER_USER=$2
@@ -11,20 +10,6 @@ AQUA_DB_PASSWORD=$7
 AQUA_LICENSE_TOKEN=$8
 AQUA_ADMIN_PASSWORD=$9
 echo "step end: globals"
-
-echo "step start: variables"
-echo "ADMIN_USER: $ADMIN_USER"
-echo "SSH_KEY: $SSH_KEY"
-echo "DOCKER_USER: $DOCKER_USER"
-echo "DOCKER_PASS: $DOCKER_PASS"
-echo "DOCKER_REGISTRY: $DOCKER_REGISTRY"
-echo "AQUA_IMAGE: $AQUA_IMAGE"
-echo "AQUA_CONTAINER_NAME: $AQUA_CONTAINER_NAME"
-echo "AQUA_DB_PASSWORD: $AQUA_DB_PASSWORD"
-echo "AQUA_LICENSE_TOKEN: $AQUA_LICENSE_TOKEN"
-echo "AQUA_ADMIN_PASSWORD: $AQUA_ADMIN_PASSWORD"
-echo "SHELL: $SHELL"
-echo "step end: variables"
 
 
 echo "step start: install docker-ce"
