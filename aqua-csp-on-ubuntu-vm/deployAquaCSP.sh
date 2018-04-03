@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "step start: globals"
 ADMIN_USER=$1
 DOCKER_USER=$2
@@ -11,6 +12,7 @@ AQUA_LICENSE_TOKEN=$8
 AQUA_ADMIN_PASSWORD=$9
 echo "step end: globals"
 
+echo "AQUA_ADMIN_PASSWORD: $AQUA_ADMIN_PASSWORD"
 
 echo "step start: install docker-ce"
 sudo apt-get update
@@ -26,7 +28,7 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 sudo apt-get update
-sudo apt-get install -y docker-ce
+sudo apt-get install -y docker-ce jq
 sudo groupadd docker
 sudo usermod -aG docker $ADMIN_USER
 sudo systemctl start docker
