@@ -46,7 +46,7 @@ if [ $ADD_ACR == "yes" ];then
         lLoginServer="https://${ACR_NAME}.azurecr.io"
         lACRPassword=$(docker exec azure-cli sh -c "az acr credential show --name $ACR_NAME --resource-group $lRG" | jq -r '.passwords[] | select(.name=="password") | .value')
         echo "Adding $ACR_NAME"
-        ADD_ACR=$(curl -s --write-out %{http_code} --output /dev/null -H 'Content-Type: application/json' -u "administrator:$AQUA_PASSWORD" -X POST http://$(hostname -i):8080/api/v1/registries -d '{"name": "'$ACR_NAME'","type": "ACR","url": "'$lLoginServer'","username": "'$ACR_NAME'","password": "'$lACRPassword'","pull_tag_pattern": "latest","auto_pull": false}')
+        ADD_ACR=$(curl -s --write-out %{http_code} --output /dev/null -H 'Content-Type: application/json' -u "administrator:$AQUA_PASSWORD" -X POST http://$(hostname -i):8080/api/v1/registries -d '{"name": "'$ACR_NAME'","type": "ACR","url": "'$lLoginServer'","username": "'$ACR_NAME'","password": "'$lACRPassword'","pull_tag_pattern": "latest","auto_pull": true}')
         if [ $ADD_ACR == "204" ];then
             echo "Add ACR $ACR_NAME successful with response code= $ADD_ACR"
         else
