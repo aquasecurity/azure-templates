@@ -147,7 +147,7 @@
 		"virtualNetworkName": "MyVNET",
 		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
 		"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-		"addACRegistries": "https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-csp-on-ubuntu-vm/add-acr-registries.json"
+		"addACRegistries": "https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker/add-acr-registries.json"
 	},
 	"resources": [{
 		"type": "Microsoft.Storage/storageAccounts",
@@ -267,7 +267,7 @@
 			"typeHandlerVersion": "2.0",
 			"autoUpgradeMinorVersion": true,
 			"protectedSettings": {
-				"fileUris": ["https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-csp-on-ubuntu-vm/deployAquaCSP.sh"],
+				"fileUris": ["https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker/deployAquaDocker.sh"],
 				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',variables('aquaContainerName'),' ',parameters('aquaDBPassword'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
 			}
 		},
