@@ -1,9 +1,9 @@
-# A sample to deploy Ubuntu VM , install docker-ce and deploy Aqua CSP container using CustomScript Extension
+# A sample to deploy Ubuntu VM , install docker-ce and deploy Aqua server,gateway and postgreSQL DB containers using CustomScript Extension
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Faquasecurity%2Fazure-templates%2Fmaster%2Faqua-csp-on-ubuntu-vm%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Faquasecurity%2Fazure-templates%2Fmaster%2Faqua-on-ubuntu-vm-docker%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Faquasecurity%2Fazure-templates%2Fmaster%2Faqua-csp-on-ubuntu-vm%2Fazuredeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Faquasecurity%2Fazure-templates%2Fmaster%2Faqua-on-ubuntu-vm-docker%2Fazuredeploy.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
@@ -11,7 +11,7 @@
 
 This template deployed: Ubuntu VM,Storage account,Public IP address,Network interface, VNET. 
 It then:
-1. Installs docker-ce and deploys Aqua CSP container
+1. Installs docker-ce and deploys PostgreSQL DB container,Aqua server and Aqua gateway containers
 2. Add all Azure Container Registries that have Azure AD service principal with list permissions (contributer role).
 
 ## Deploy
@@ -35,6 +35,6 @@ In order to deploy the template, follow the following guides:
   Click the "Deploy to Azure" button.
   
   
- <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-templates%2Fmaster%2Faqua-csp-on-ubuntu-vm%2Fazuredeploy.json" target="_blank">
+ <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-templates%2Fmaster%2Faqua-on-ubuntu-vm-docker%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
