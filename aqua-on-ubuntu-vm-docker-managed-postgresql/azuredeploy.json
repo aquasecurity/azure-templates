@@ -1,0 +1,427 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"vmName": {
+			"type": "String",
+			"metadata": {
+				"description": "Name of the VM"
+			}
+		},
+		"newStorageAccountName": {
+			"defaultValue": "vmsa",
+			"type": "String",
+			"metadata": {
+				"description": "Unique DNS Name for the Storage Account where the Virtual Machine's disks will be placed."
+			}
+		},
+		"adminUsername": {
+			"defaultValue": "ubuntu",
+			"type": "String",
+			"metadata": {
+				"description": "User name for the Virtual Machine."
+			}
+		},
+		"sshPublicKey": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Enter public ssh key"
+			}
+		},
+		"dnsNameForPublicIP": {
+			"defaultValue": "vmip",
+			"type": "String",
+			"metadata": {
+				"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_DS2_v2",
+			"type": "String",
+			"metadata": {
+				"description": "Azure VM size"
+			}
+		},
+		"ubuntuOSVersion": {
+			"defaultValue": "16.04.0-LTS",
+			"allowedValues": ["14.04.2-LTS",
+			"15.10",
+			"16.04.0-LTS"],
+			"type": "String",
+			"metadata": {
+				"description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version. Allowed values: 12.04.5-LTS, 14.04.2-LTS, 15.10."
+			}
+		},
+		"DBadministratorLogin": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 16,
+			"defaultValue": "aquaadm"
+		},
+		"DBadministratorLoginPassword": {
+			"type": "securestring"
+		},
+		"location": {
+			"type": "string",
+			"allowedValues": ["East Asia",
+			"East US 2",
+			"East US",
+			"Japan East",
+			"Japan West",
+			"North Central US",
+			"North Europe",
+			"South Central US",
+			"Southeast Asia",
+			"West Europe",
+			"West US"],
+			"defaultValue": "North Europe"
+		},
+		"serverName": {
+			"type": "string",
+			"minLength": 2,
+			"maxLength": 63
+		},
+		"skuCapacityDTU": {
+			"type": "int",
+			"allowedValues": [50,
+			100,
+			200,
+			400,
+			800],
+			"defaultValue": 50,
+			"metadata": {
+				"description": "For basic: 50-100, for Standard: 100-800"
+			}
+		},
+		"skuFamily": {
+			"type": "string",
+			"allowedValues": ["SkuFamily"],
+			"defaultValue": "SkuFamily"
+		},
+		"skuName": {
+			"type": "string",
+			"allowedValues": ["PGSQLB50",
+			"PGSQLB100",
+			"PGSQLS100",
+			"PGSQLS200",
+			"PGSQLS400",
+			"PGSQLS800"],
+			"defaultValue": "PGSQLB50"
+		},
+		"skuSizeMB": {
+			"type": "int",
+			"minValue": 51200,
+			"maxValue": 102400,
+			"defaultValue": 51200
+		},
+		"skuTier": {
+			"type": "string",
+			"allowedValues": ["Basic",
+			"Standard"],
+			"defaultValue": "Basic"
+		},
+		"version": {
+			"type": "string",
+			"allowedValues": ["9.5",
+			"9.6"],
+			"defaultValue": "9.6"
+		},
+		"firewallRuleName": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 128,
+			"defaultValue": "AllowAll"
+		},
+		"firewallStartIpAddress": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 15,
+			"defaultValue": "0.0.0.0"
+		},
+		"firewallEndIpAddress": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 15,
+			"defaultValue": "255.255.255.255"
+		},
+		"dockerHubUser": {
+			"type": "String",
+			"metadata": {
+				"description": "User name for Docker Hub registry"
+			}
+		},
+		"dockerHubPassword": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Password for Docker Hub registry"
+			}
+		},
+		"aquaLicenseToken": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Enter Aqua licnse token"
+			}
+		},
+		"AQUA_VERSION": {
+			"defaultValue": "3.0.2",
+			"type": "String",
+			"metadata": {
+				"description": "The Aqua version to deploy"
+			}
+		},
+		"AQUA_REPO": {
+			"defaultValue": "aquasec",
+			"type": "String",
+			"allowedValues": ["aquasec",
+			"aquadev"],
+			"metadata": {
+				"description": "The Aqua repo to deploy from"
+			}
+		},
+		"aquaAdminPassword": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Please select your Aqua administrator password"
+			}
+		},
+		"addACRReg": {
+			"defaultValue": "no",
+			"allowedValues": ["no",
+			"yes"],
+			"type": "String",
+			"metadata": {
+				"description": "When set to yes, all Azure container registries in the AD will be added to Aqua server"
+			}
+		},
+		"azureADId": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Azure active directory ID, needs to have contributer role"
+			}
+		},
+		"azureADPassword": {
+			"type": "SecureString",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Azure active directory password"
+			}
+		},
+		"azureTenantID": {
+			"type": "SecureString",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Azure tenant ID"
+			}
+		}
+	},
+	"variables": {
+		"dockerRegistryServer": "docker.io",
+        "DBUrl": "[concat(parameters('DBadministratorLogin'),'postgres.database.azure.com')]",
+		"DBforPostgreSQLapiVersion": "2016-02-01-privatepreview",
+		"extensionName": "CustomScript",
+		"imagePublisher": "Canonical",
+		"imageOffer": "UbuntuServer",
+		"sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+		"OSDiskName": "osdiskforlinuxsimple",
+		"nicName": "myVMNic",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"storageAccountType": "Standard_LRS",
+		"publicIPAddressName": "myPublicIP",
+		"publicIPAddressType": "Dynamic",
+		"vmStorageAccountContainerName": "vhds",
+		"virtualNetworkName": "MyVNET",
+		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+		"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+		"addACRegistries": "https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/add-acr-registries.json"
+	},
+	"resources": [{
+		"apiVersion": "[variables('DBforPostgreSQLapiVersion')]",
+		"kind": "",
+		"location": "[parameters('location')]",
+		"name": "[parameters('serverName')]",
+		"properties": {
+			"version": "[parameters('version')]",
+			"DBadministratorLogin": "[parameters('DBadministratorLogin')]",
+			"DBadministratorLoginPassword": "[parameters('DBadministratorLoginPassword')]",
+			"storageMB": "[parameters('skuSizeMB')]"
+		},
+		"sku": {
+			"name": "[parameters('skuName')]",
+			"tier": "[parameters('skuTier')]",
+			"capacity": "[parameters('skuCapacityDTU')]",
+			"size": "[parameters('skuSizeMB')]",
+			"family": "[parameters('skuFamily')]"
+		},
+		"type": "Microsoft.DBforPostgreSQL/servers",
+		"resources": [{
+			"type": "firewallrules",
+			"apiVersion": "[variables('DBforPostgreSQLapiVersion')]",
+			"dependsOn": ["[concat('Microsoft.DBforPostgreSQL/servers/', parameters('serverName'))]"],
+			"location": "[parameters('location')]",
+			"name": "[parameters('firewallRuleName')]",
+			"properties": {
+				"startIpAddress": "[parameters('firewallStartIpAddress')]",
+				"endIpAddress": "[parameters('firewallEndIpAddress')]"
+			}
+		}]
+	},
+	{
+		"type": "Microsoft.Storage/storageAccounts",
+		"name": "[parameters('newStorageAccountName')]",
+		"apiVersion": "2015-05-01-preview",
+		"location": "[resourceGroup().location]",
+		"properties": {
+			"accountType": "[variables('storageAccountType')]"
+		}
+	},
+	{
+		"type": "Microsoft.Network/publicIPAddresses",
+		"name": "[variables('publicIPAddressName')]",
+		"apiVersion": "2015-05-01-preview",
+		"location": "[resourceGroup().location]",
+		"properties": {
+			"publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+			"dnsSettings": {
+				"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+			}
+		}
+	},
+	{
+		"type": "Microsoft.Network/virtualNetworks",
+		"name": "[variables('virtualNetworkName')]",
+		"apiVersion": "2015-05-01-preview",
+		"location": "[resourceGroup().location]",
+		"properties": {
+			"addressSpace": {
+				"addressPrefixes": ["[variables('addressPrefix')]"]
+			},
+			"subnets": [{
+				"name": "[variables('subnetName')]",
+				"properties": {
+					"addressPrefix": "[variables('subnetPrefix')]"
+				}
+			}]
+		}
+	},
+	{
+		"type": "Microsoft.Network/networkInterfaces",
+		"name": "[variables('nicName')]",
+		"apiVersion": "2015-05-01-preview",
+		"location": "[resourceGroup().location]",
+		"properties": {
+			"ipConfigurations": [{
+				"name": "ipconfig1",
+				"properties": {
+					"privateIPAllocationMethod": "Dynamic",
+					"publicIPAddress": {
+						"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+					},
+					"subnet": {
+						"id": "[variables('subnetRef')]"
+					}
+				}
+			}]
+		},
+		"dependsOn": ["[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+		"[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"]
+	},
+	{
+		"type": "Microsoft.Compute/virtualMachines",
+		"name": "[parameters('vmName')]",
+		"apiVersion": "2015-05-01-preview",
+		"location": "[resourceGroup().location]",
+		"properties": {
+			"hardwareProfile": {
+				"vmSize": "[parameters('vmSize')]"
+			},
+			"osProfile": {
+				"computerName": "[parameters('vmName')]",
+				"adminUsername": "[parameters('adminUsername')]",
+				"linuxConfiguration": {
+					"disablePasswordAuthentication": "true",
+					"ssh": {
+						"publicKeys": [{
+							"path": "[variables('sshKeyPath')]",
+							"keyData": "[parameters('sshPublicKey')]"
+						}]
+					}
+				}
+			},
+			"storageProfile": {
+				"imageReference": {
+					"publisher": "[variables('imagePublisher')]",
+					"offer": "[variables('imageOffer')]",
+					"sku": "[parameters('ubuntuOSVersion')]",
+					"version": "latest"
+				},
+				"osDisk": {
+					"name": "osdisk",
+					"vhd": {
+						"uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+					},
+					"caching": "ReadWrite",
+					"createOption": "FromImage"
+				}
+			},
+			"networkProfile": {
+				"networkInterfaces": [{
+					"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+				}]
+			}
+		},
+		"dependsOn": ["[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
+		"[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"]
+	},
+	{
+		"type": "Microsoft.Compute/virtualMachines/extensions",
+		"name": "[concat(parameters('vmName'),'/installcustomscript')]",
+		"apiVersion": "2015-05-01-preview",
+		"location": "[resourceGroup().location]",
+		"properties": {
+			"publisher": "Microsoft.Azure.Extensions",
+			"type": "CustomScript",
+			"typeHandlerVersion": "2.0",
+			"autoUpgradeMinorVersion": true,
+			"protectedSettings": {
+				"fileUris": ["https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/deployAquaDocker.sh"],
+				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',parameters('DBadministratorLogin'),' ',parameters('DBadministratorLoginPassword'),' ',variable('DBUrl'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
+			}
+		},
+		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"]
+	},
+	{
+		"type": "Microsoft.Resources/deployments",
+		"name": "addACRRegistry",
+		"apiVersion": "2015-01-01",
+		"properties": {
+			"mode": "Incremental",
+			"templateLink": {
+				"uri": "[variables('addACRegistries')]",
+				"contentVersion": "1.0.0.0"
+			},
+			"parameters": {
+				"vmName": {
+					"value": "[parameters('vmName')]"
+				},
+				"addACRReg": {
+					"value": "[parameters('addACRReg')]"
+				},
+				"aquaAdminPassword": {
+					"value": "[parameters('aquaAdminPassword')]"
+				},
+				"azureADId": {
+					"value": "[parameters('azureADId')]"
+				},
+				"azureADPassword": {
+					"value": "[parameters('azureADPassword')]"
+				},
+				"azureTenantID": {
+					"value": "[parameters('azureTenantID')]"
+				}
+			}
+		},
+		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'),'/extensions/installcustomscript')]"]
+	}]
+}
