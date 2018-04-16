@@ -131,7 +131,6 @@
 	"variables": {
 		"dockerRegistryServer": "docker.io",
 		"extensionName": "CustomScript",
-		"aquaContainerName": "aqua-csp",
 		"imagePublisher": "Canonical",
 		"imageOffer": "UbuntuServer",
 		"sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
@@ -268,7 +267,7 @@
 			"autoUpgradeMinorVersion": true,
 			"protectedSettings": {
 				"fileUris": ["https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker/deployAquaDocker.sh"],
-				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',variables('aquaContainerName'),' ',parameters('aquaDBPassword'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
+				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',parameters('aquaDBPassword'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
 			}
 		},
 		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"]
