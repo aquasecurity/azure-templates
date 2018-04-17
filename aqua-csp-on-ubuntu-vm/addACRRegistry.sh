@@ -1,60 +1,85 @@
 #!/bin/bash
-ADD_ACR=$1
-AQUA_PASSWORD=$2
-AZURE_AD_ID=$3
-AZURE_AD_PASSWORD=$4
-AZURE_TENANT_ID=$5
 
-if [ $ADD_ACR == "yes" ];then
-    sleep 30
-    #Validate all parameters are set
-    echo "step start: validate input parameters"
-    if [[ -z "$AQUA_PASSWORD" ]] || [[ -z "$AZURE_AD_ID" ]] || [[ -z "$AZURE_AD_PASSWORD" ]] || [[ -z "$AZURE_TENANT_ID" ]];then
-        echo "Missing parameters: AQUA_PASSWORD=$AQUA_PASSWORD,AZURE_AD_ID=$AZURE_AD_ID,AZURE_AD_PASSWORD=$AZURE_AD_PASSWORD  ---- exiting"
-        exit 1
-    else
-        echo "Parameter validation passed successfully"
-    fi
-    echo "step end: validate input parameters"
+echo "step start: globals"
+ADMIN_USER=$1
+DOCKER_USER=$2
+DOCKER_PASS=$3
+DOCKER_REGISTRY=$4
+AQUA_IMAGE=$5
+AQUA_CONTAINER_NAME=$6
+AQUA_DB_PASSWORD=$7
+AQUA_LICENSE_TOKEN=$8
+AQUA_ADMIN_PASSWORD=$9
+INSTALL_AQUA="${10:-no}"
+echo "step end: globals"
 
-    #AZ login service-principal
-    echo "step start: run microsoft/azure-cli container and login to SP"
-    docker rm azure-cli -f
-    docker run --name azure-cli -it -d microsoft/azure-cli 
-    AZ_LOGIN=$(docker exec azure-cli sh -c "az login --service-principal -u $AZURE_AD_ID -p $AZURE_AD_PASSWORD --tenant $AZURE_TENANT_ID"  | jq -r '.[].state')
-    if [ $AZ_LOGIN == "Enabled" ];then 
-        echo "AZ login successful"
-    else
-        echo "AZ login failed,exiting"
-        exit 1
-    fi
-    echo "step end: run microsoft/azure-cli container and login to SP"
-    #LIST available ACRs
-    echo "step start: list available ACRs"
-    ACR_NAME=$(docker exec azure-cli sh -c "az acr list -o json | jq -r '.[] | select(.adminUserEnabled==true) | .name'")
-    if [[ -z "$ACR_NAME" ]];then
-        echo "No available ACRs found: ACR_NAME=$ACR_NAME. Exiting"
-        exit 1
-    else
-        echo "Following ACRs will be added: $ACR_NAME"
-    fi
-    echo "step end: list available ACRs"
-    #Get ACR details and add ACR to Aqua server
-    echo "step start: Add ACRs"
-    for ACR_NAME in ${ACR_NAME[@]};do
-        lRG=$(docker exec azure-cli sh -c "az acr list -o json" | jq -r --arg ACR_NAME "$ACR_NAME" '.[] | select(.name==$ACR_NAME) | .resourceGroup')
-        lLoginServer="https://${ACR_NAME}.azurecr.io"
-        lACRPassword=$(docker exec azure-cli sh -c "az acr credential show --name $ACR_NAME --resource-group $lRG" | jq -r '.passwords[] | select(.name=="password") | .value')
-        echo "Adding $ACR_NAME"
-        ADD_ACR=$(curl -s --write-out %{http_code} --output /dev/null -H 'Content-Type: application/json' -u "administrator:$AQUA_PASSWORD" -X POST http://$(hostname -i):8080/api/v1/registries -d '{"name": "'$ACR_NAME'","type": "ACR","url": "'$lLoginServer'","username": "'$ACR_NAME'","password": "'$lACRPassword'","pull_tag_pattern": "latest","auto_pull": true}')
-        if [ $ADD_ACR == "204" ];then
-            echo "Add ACR $ACR_NAME successful with response code= $ADD_ACR"
-        else
-            echo "Add ACR $ACR_NAME failed with response code= $ADD_ACR"
+echo "AQUA_ADMIN_PASSWORD: $AQUA_ADMIN_PASSWORD"
 
-        fi  
-    done
-    echo "step end: Add ACRs"
- else
-    echo "ADD_ACR is set to $ADD_ACR, ACR's will not be added"
+echo "step start: install docker-ce"
+sudo apt-get update
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce jq
+sudo groupadd docker
+sudo usermod -aG docker $ADMIN_USER
+sudo systemctl start docker
+sudo systemctl enable docker
+sleep 10
+docker version
+lExitCode=$?
+if [ $lExitCode == "0" ];then
+  echo "Docker installed successfully"
+else
+  echo "Failed to install docker, exit code : $lExitCode, exiting"
+  exit 1
+fi
+echo "step end: install docker-ce"
+
+if [ $INSTALL_AQUA == "yes" ];then
+    #Docker login
+    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+    lExitCode=$?
+    if [ $lExitCode == "0" ];then
+      echo "Sucessfully logged in to DOCKER_REGISTRY"
+    else
+      echo "Failed to login to DOCKER_REGISTRY, exit code : $lExitCode , exiting"
+      exit 1
+    fi
+
+    #Run Aqua CASP
+    echo "step start: deploy Aqua CSP"
+    docker run -d -p 5432:5432 -p 3622:3622 -p 8080:8080 --name $AQUA_CONTAINER_NAME \
+       -e POSTGRES_PASSWORD=${AQUA_DB_PASSWORD} \
+       -e SCALOCK_DBUSER=postgres \
+       -e SCALOCK_DBPASSWORD=${AQUA_DB_PASSWORD} \
+       -e SCALOCK_DBNAME=scalock \
+       -e SCALOCK_DBHOST=$(hostname -i) \
+       -e SCALOCK_AUDIT_DBUSER=postgres \
+       -e SCALOCK_AUDIT_DBPASSWORD=${AQUA_DB_PASSWORD} \
+       -e SCALOCK_AUDIT_DBNAME=slk_audit \
+       -e SCALOCK_AUDIT_DBHOST=$(hostname -i) \
+       -e LICENSE_TOKEN=${AQUA_LICENSE_TOKEN} \
+       -e ADMIN_PASSWORD=${AQUA_ADMIN_PASSWORD} \
+       -v /var/lib/postgresql/data:/var/lib/postgresql/data \
+       -v /var/run/docker.sock:/var/run/docker.sock \
+     $AQUA_IMAGE
+     
+     lExitCode=$?
+    if [ $lExitCode == "0" ];then
+      echo "Sucessfully ran $AQUA_IMAGE"
+    else
+      echo "Failed to run $AQUA_IMAGE, exit code : $lExitCode , exiting"
+      exit 1
+    fi
+    echo "step start: deploy Aqua CSP"
 fi
