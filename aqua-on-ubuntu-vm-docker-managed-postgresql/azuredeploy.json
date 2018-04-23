@@ -35,6 +35,27 @@
 				"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
 			}
 		},
+        "nicName": {
+			"defaultValue": "vmnic",
+			"type": "String",
+			"metadata": {
+				"description": "Unique NIC name"
+			}
+		},
+        "publicIPAddressName": {
+			"defaultValue": "vmpublicip",
+			"type": "String",
+			"metadata": {
+				"description": "Unique publicIP address name"
+			}
+		},
+        "virtualNetworkName": {
+			"defaultValue": "vmvnet",
+			"type": "String",
+			"metadata": {
+				"description": "VNET name"
+			}
+		},
 		"vmSize": {
 			"defaultValue": "Standard_DS2_v2",
 			"type": "String",
@@ -222,13 +243,14 @@
 	},
 	"variables": {
 		"dockerRegistryServer": "docker.io",
+        "PGlogin": "[concat(parameters('administratorLogin'),'@',parameters('serverName'))]",
+        "PGServer": "[concat(parameters('administratorLogin'),'.postgres.database.azure.com')]",
 		"DBforPostgreSQLapiVersion": "2016-02-01-privatepreview",
 		"extensionName": "CustomScript",
 		"imagePublisher": "Canonical",
 		"imageOffer": "UbuntuServer",
 		"sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
 		"OSDiskName": "osdiskforlinuxsimple",
-		"nicName": "myVMNic",
 		"addressPrefix": "10.0.0.0/16",
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
@@ -236,8 +258,7 @@
 		"publicIPAddressName": "myPublicIP",
 		"publicIPAddressType": "Dynamic",
 		"vmStorageAccountContainerName": "vhds",
-		"virtualNetworkName": "MyVNET",
-		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
 		"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
 		"addACRegistries": "https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/add-acr-registries.json"
 	},
@@ -283,7 +304,7 @@
 	},
 	{
 		"type": "Microsoft.Network/publicIPAddresses",
-		"name": "[variables('publicIPAddressName')]",
+		"name": "[parameters('publicIPAddressName')]",
 		"apiVersion": "2015-05-01-preview",
 		"location": "[resourceGroup().location]",
 		"properties": {
@@ -295,7 +316,7 @@
 	},
 	{
 		"type": "Microsoft.Network/virtualNetworks",
-		"name": "[variables('virtualNetworkName')]",
+		"name": "[parameters('virtualNetworkName')]",
 		"apiVersion": "2015-05-01-preview",
 		"location": "[resourceGroup().location]",
 		"properties": {
@@ -312,7 +333,7 @@
 	},
 	{
 		"type": "Microsoft.Network/networkInterfaces",
-		"name": "[variables('nicName')]",
+		"name": "[parameters('nicName')]",
 		"apiVersion": "2015-05-01-preview",
 		"location": "[resourceGroup().location]",
 		"properties": {
@@ -321,7 +342,7 @@
 				"properties": {
 					"privateIPAllocationMethod": "Dynamic",
 					"publicIPAddress": {
-						"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+						"id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]"
 					},
 					"subnet": {
 						"id": "[variables('subnetRef')]"
@@ -329,8 +350,8 @@
 				}
 			}]
 		},
-		"dependsOn": ["[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-		"[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"]
+		"dependsOn": ["[concat('Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressName'))]",
+		"[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"]
 	},
 	{
 		"type": "Microsoft.Compute/virtualMachines",
@@ -372,12 +393,12 @@
 			},
 			"networkProfile": {
 				"networkInterfaces": [{
-					"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+					"id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('nicName'))]"
 				}]
 			}
 		},
 		"dependsOn": ["[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
-		"[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"]
+		"[concat('Microsoft.Network/networkInterfaces/', parameters('nicName'))]"]
 	},
 	{
 		"type": "Microsoft.Compute/virtualMachines/extensions",
@@ -391,7 +412,7 @@
 			"autoUpgradeMinorVersion": true,
 			"protectedSettings": {
 				"fileUris": ["https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/deployAquaDocker.sh"],
-				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',parameters('administratorLogin'),' ',parameters('administratorLoginPassword'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
+				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',variables('PGlogin'),' ',parameters('administratorLoginPassword'),' ',variables('PGServer'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
 			}
 		},
 		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
