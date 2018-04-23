@@ -222,7 +222,6 @@
 	},
 	"variables": {
 		"dockerRegistryServer": "docker.io",
-		"DBUrl": "[concat(parameters('administratorLogin'),'postgres.database.azure.com')]",
 		"DBforPostgreSQLapiVersion": "2016-02-01-privatepreview",
 		"extensionName": "CustomScript",
 		"imagePublisher": "Canonical",
@@ -392,7 +391,7 @@
 			"autoUpgradeMinorVersion": true,
 			"protectedSettings": {
 				"fileUris": ["https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/deployAquaDocker.sh"],
-				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',parameters('administratorLogin'),' ',parameters('administratorLoginPassword'),' ',variable('DBUrl'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
+				"commandToExecute": "[concat('./deployAquaDocker.sh',' ',parameters('adminUsername'),' ',parameters('dockerHubUser'),' ',parameters('dockerHubPassword'),' ',variables('dockerRegistryServer'),' ',parameters('AQUA_REPO'),' ',parameters('AQUA_VERSION'),' ',parameters('administratorLogin'),' ',parameters('administratorLoginPassword'),' ',parameters('aquaLicenseToken'),' ',parameters('aquaAdminPassword'))]"
 			}
 		},
 		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
