@@ -243,8 +243,8 @@
 	},
 	"variables": {
 		"dockerRegistryServer": "docker.io",
-        "PGlogin": "[concat(parameters('administratorLogin'),'@',parameters('serverName'))]",
-        "PGServer": "[concat(parameters('administratorLogin'),'.postgres.database.azure.com')]",
+                "PGlogin": "[concat(parameters('administratorLogin'),'@',parameters('serverName'))]",
+                "PGServer": "[concat(parameters('serverName'),'.postgres.database.azure.com')]",
 		"DBforPostgreSQLapiVersion": "2016-02-01-privatepreview",
 		"extensionName": "CustomScript",
 		"imagePublisher": "Canonical",
