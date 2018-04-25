@@ -260,7 +260,8 @@
 		"vmStorageAccountContainerName": "vhds",
 		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
 		"subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-		"addACRegistries": "https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/add-acr-registries.json"
+		"addACRegistries": "https://raw.githubusercontent.com/aquasecurity/azure-templates/master/aqua-on-ubuntu-vm-docker-managed-postgresql/add-acr-registries.json",
+		"EnablesslEnforcement": "false"
 	},
 	"resources": [{
 		"apiVersion": "[variables('DBforPostgreSQLapiVersion')]",
@@ -271,7 +272,8 @@
 			"version": "[parameters('version')]",
 			"administratorLogin": "[parameters('administratorLogin')]",
 			"administratorLoginPassword": "[parameters('administratorLoginPassword')]",
-			"storageMB": "[parameters('skuSizeMB')]"
+			"storageMB": "[parameters('skuSizeMB')]",
+			"sslEnforcement": "[variables('EnablesslEnforcement')]"
 		},
 		"sku": {
 			"name": "[parameters('skuName')]",
