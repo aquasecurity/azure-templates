@@ -104,7 +104,7 @@ fi
 echo "step end: start Aqua gateway container"
 
 echo "step start: monitoring server logs to validate startup"
-( cmdpid=$BASHPID; (sleep 120; kill $cmdpid) & exec $(( docker logs aqua-web -f & ) | grep -q "http server started") );lExit=$?
+( cmdpid=$BASHPID; (sleep 120; kill $cmdpid) & exec $(( docker logs aqua-web -f & ) | grep -q "http server started") );lExitCode=$?
 if [ $lExitCode == "0" ];then
  echo "step end: monitoring server logs to validate startup"
 else
