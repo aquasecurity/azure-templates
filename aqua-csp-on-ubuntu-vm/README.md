@@ -7,7 +7,7 @@
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
-[CustomScript Extension](https://github.com/Azure/azure-linux-extensions/tree/master/CustomScript) allows the owner of the Azure Virtual Machines to run customized scripts in the VM.
+[CustomScript Extension](https://github.com/Azure/custom-script-extension-linux) allows the owner of the Azure Virtual Machines to run customized scripts in the VM.
 
 This template deployed: Ubuntu VM,Storage account,Public IP address,Network interface, VNET. 
 It then:
